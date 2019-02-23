@@ -3,9 +3,14 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import render
 
-
 def home(request):
-    return HttpResponse("Hello, Django!")
+    return render(request, "app/home.html")
+
+def about(request):
+    return render(request, "app/about.html")
+
+def contact(request):
+    return render(request, "app/contact.html")
 
 
 def hello_there(request, name):
