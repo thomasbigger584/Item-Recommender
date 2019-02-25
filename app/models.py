@@ -20,15 +20,17 @@ class LogMessage(models.Model):
         return f"'{self.message}' logged on {date.strftime('%A, %d %B, %Y at %X')}"
 
 
+# constants
 base_folder = 'app/trained_models'
+popularity = 'popularity'
+cosine = 'cosine'
+pearson = 'pearson'
 
 
 class ItemRecommender:
-    def itemRecommender(self):
-        customers = pd.read_csv('app/data/recommend_1.csv')
-        transactions = pd.read_csv('app/data/trx_data.csv')
-
+    def trainModels(self):
         s = time.time()
+        transactions = pd.read_csv('app/data/trx_data.csv')
 
         transactions['products'] = transactions['products'].apply(
             lambda x: [int(i) for i in x.split('|')])
@@ -72,23 +74,23 @@ class ItemRecommender:
         train_data_norm, test_data_norm = split_data(data_norm)
 
         def model(train_data, name, user_id, item_id, target, users_to_recommend, n_rec, n_display):
-            if name == 'popularity':
+            if name == popularity:
                 model = tc.popularity_recommender.create(train_data,
                                                          user_id=user_id,
                                                          item_id=item_id,
                                                          target=target)
-            elif name == 'cosine':
+            elif name == cosine:
                 model = tc.item_similarity_recommender.create(train_data,
                                                               user_id=user_id,
                                                               item_id=item_id,
                                                               target=target,
-                                                              similarity_type='cosine')
-            elif name == 'pearson':
+                                                              similarity_type=cosine)
+            elif name == pearson:
                 model = tc.item_similarity_recommender.create(train_data,
                                                               user_id=user_id,
                                                               item_id=item_id,
                                                               target=target,
-                                                              similarity_type='pearson')
+                                                              similarity_type=pearson)
             model.save(base_folder + '/' + name)
             return model
 
@@ -101,7 +103,7 @@ class ItemRecommender:
         n_display = 30
 
         # The popularity model takes the most popular items for recommendation. These items are products with the highest number of sells across customers.
-        name = 'popularity'
+        name = popularity
         target = 'purchase_count'
         popularity_model = model(train_data_dummy, name, user_id,
                                  item_id, target, users_to_recommend, n_rec, n_display)
@@ -114,7 +116,7 @@ class ItemRecommender:
 
         # In collaborative filtering, we would recommend items based on how similar users purchase items.
         # For instance, if customer 1 and customer 2 bought similar items, e.g. 1 bought X, Y, Z and 2 bought X, Y, we would recommend an item Z to customer 2.
-        name = 'cosine'
+        name = cosine
         target = 'purchase_count'
         cos_model = model(train_data_dummy, name, user_id, item_id, target,
                           users_to_recommend, n_rec, n_display)
@@ -124,7 +126,7 @@ class ItemRecommender:
         # cos_recomm.print_rows(n_display)
 
         # Similarity is the pearson coefficient between the two vectors.
-        name = 'pearson'
+        name = pearson
         target = 'purchase_count'
         pear_model = model(train_data_dummy, name, user_id, item_id,
                            target, users_to_recommend, n_rec, n_display)
@@ -134,3 +136,14 @@ class ItemRecommender:
         pear_recomm.print_rows(n_display)
 
         print("Execution time:", round((time.time()-s)/60, 2), "minutes")
+
+    def recommend(self):
+        popularity_model = tc.load_model(base_folder + '/' + popularity)
+
+        users_to_recommend = list(1)
+        n_rec = 10
+        popularity_recomm = popularity_model.recommend(
+            users=users_to_recommend, k=n_rec)
+
+        n_display = 30
+        popularity_recomm.print_rows(n_display)

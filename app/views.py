@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 class ItemRecommenderView(APIView):
     def post(self, request, format=None):
         itemRecommender = ItemRecommender()
-        itemRecommender.itemRecommender()
+        itemRecommender.trainModels()
         return Response({'message': 'working'}, status=status.HTTP_200_OK)
 
 
