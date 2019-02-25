@@ -1,1 +1,5 @@
 Django==2.1.7
+pandas
+scipy
+sklearn
+turicreate
