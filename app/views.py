@@ -13,9 +13,8 @@ from rest_framework.views import APIView
 
 class ItemRecommenderView(APIView):
     def post(self, request, format=None):
-        itemRecommender = ItemRecommender()
-        itemRecommender.trainModels()
-        return Response({'message': 'working'}, status=status.HTTP_200_OK)
+        ItemRecommender().trainModels()
+        return Response(status=status.HTTP_200_OK)
 
 
 class HomeListView(ListView):

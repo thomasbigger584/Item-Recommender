@@ -103,38 +103,20 @@ class ItemRecommender:
         n_display = 30
 
         # The popularity model takes the most popular items for recommendation. These items are products with the highest number of sells across customers.
-        name = popularity
         target = 'purchase_count'
-        popularity_model = model(train_data_dummy, name, user_id,
+        popularity_model = model(train_data_dummy, popularity, user_id,
                                  item_id, target, users_to_recommend, n_rec, n_display)
-
-        # Get recommendations for a list of users to recommend (from customers file)
-        # Printed below is head / top 30 rows for first 3 customers with 10 recommendations each
-        popularity_recomm = popularity_model.recommend(
-            users=users_to_recommend, k=n_rec)
-        # popularity_recomm.print_rows(n_display)
 
         # In collaborative filtering, we would recommend items based on how similar users purchase items.
         # For instance, if customer 1 and customer 2 bought similar items, e.g. 1 bought X, Y, Z and 2 bought X, Y, we would recommend an item Z to customer 2.
-        name = cosine
         target = 'purchase_count'
-        cos_model = model(train_data_dummy, name, user_id, item_id, target,
+        cos_model = model(train_data_dummy, cosine, user_id, item_id, target,
                           users_to_recommend, n_rec, n_display)
 
-        cos_recomm = cos_model.recommend(
-            users=users_to_recommend, k=n_rec)
-        # cos_recomm.print_rows(n_display)
-
         # Similarity is the pearson coefficient between the two vectors.
-        name = pearson
         target = 'purchase_count'
-        pear_model = model(train_data_dummy, name, user_id, item_id,
+        pear_model = model(train_data_dummy, pearson, user_id, item_id,
                            target, users_to_recommend, n_rec, n_display)
-
-        pear_recomm = pear_model.recommend(
-            users=users_to_recommend, k=n_rec)
-        pear_recomm.print_rows(n_display)
-
         print("Execution time:", round((time.time()-s)/60, 2), "minutes")
 
     def recommend(self):
