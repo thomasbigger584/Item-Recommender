@@ -18,8 +18,10 @@ class LogMessage(models.Model):
         date = timezone.localtime(self.log_date)
         return f"'{self.message}' logged on {date.strftime('%A, %d %B, %Y at %X')}"
 
-class ItemRecommender:
 
+class ItemRecommender:
     def itemRecommender(self):
-        print('Item Recommender Getting here 1')
-        return ''
+        print('Reading Recommend Datas, consisting of a list of 1000 customer IDs to recommend as output')
+        customers = pd.read_csv('app/data/recommend_1.csv')
+        transactions = pd.read_csv('app/data/trx_data.csv')
+        print(transactions)
