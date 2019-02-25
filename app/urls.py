@@ -11,7 +11,6 @@ home_list_view = views.HomeListView.as_view(
 
 item_recommender_view = views.ItemRecommenderView.as_view()
 
-
 urlpatterns = [
     path("", home_list_view, name="home"),
     path("app/<name>", views.hello_there, name="hello_there"),

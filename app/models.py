@@ -20,5 +20,6 @@ class LogMessage(models.Model):
 
 class ItemRecommender:
 
-    def itemRecommender():
+    def itemRecommender(self):
+        print('Item Recommender Getting here 1')
         return ''

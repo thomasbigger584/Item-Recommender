@@ -3,7 +3,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from app.forms import LogMessageForm
-from app.models import LogMessage
+from app.models import LogMessage, ItemRecommender
 from django.views.generic import ListView
 from rest_framework import status
 from rest_framework.parsers import JSONParser
@@ -13,7 +13,8 @@ from rest_framework.views import APIView
 
 class ItemRecommenderView(APIView):
     def post(self, request, format=None):
-        print("getting here inside ItemRecommenderView")
+        itemRecommender = ItemRecommender()
+        itemRecommender.itemRecommender()
         return Response({'message': 'working'}, status=status.HTTP_200_OK)
 
 
