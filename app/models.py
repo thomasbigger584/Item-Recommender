@@ -1,6 +1,11 @@
 from django.db import models
 from django.utils import timezone
 
+import pandas as pd
+import numpy as np
+import time
+import turicreate as tc
+
 # Create your models here.
 
 
@@ -15,5 +20,5 @@ class LogMessage(models.Model):
 
 class ItemRecommender:
 
-    def train():
+    def itemRecommender():
         return ''

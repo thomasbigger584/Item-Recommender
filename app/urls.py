@@ -9,6 +9,8 @@ home_list_view = views.HomeListView.as_view(
     template_name="app/home.html",
 )
 
+item_recommender_view = views.ItemRecommenderView.as_view()
+
 
 urlpatterns = [
     path("", home_list_view, name="home"),
@@ -16,4 +18,5 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
     path("log/", views.log_message, name="log"),
+    path('item-recommender/', item_recommender_view)
 ]
