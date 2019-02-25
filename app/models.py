@@ -20,6 +20,9 @@ class LogMessage(models.Model):
         return f"'{self.message}' logged on {date.strftime('%A, %d %B, %Y at %X')}"
 
 
+base_folder = 'app/trained_models'
+
+
 class ItemRecommender:
     def itemRecommender(self):
         customers = pd.read_csv('app/data/recommend_1.csv')
@@ -86,8 +89,7 @@ class ItemRecommender:
                                                               item_id=item_id,
                                                               target=target,
                                                               similarity_type='pearson')
-            base_folder = 'app/trained_models'
-            popularity_model.save(base_folder + '/' + name)
+            model.save(base_folder + '/' + name)
             return model
 
         # variables to define field names
@@ -114,10 +116,21 @@ class ItemRecommender:
         # For instance, if customer 1 and customer 2 bought similar items, e.g. 1 bought X, Y, Z and 2 bought X, Y, we would recommend an item Z to customer 2.
         name = 'cosine'
         target = 'purchase_count'
-        cos = model(train_data_dummy, name, user_id, item_id, target,
-                    users_to_recommend, n_rec, n_display)
+        cos_model = model(train_data_dummy, name, user_id, item_id, target,
+                          users_to_recommend, n_rec, n_display)
 
-        cos_recomm = popularity_model.recommend(users=users_to_recommend, k=n_rec)
-        cos_recomm.print_rows(n_display)
+        cos_recomm = cos_model.recommend(
+            users=users_to_recommend, k=n_rec)
+        # cos_recomm.print_rows(n_display)
+
+        # Similarity is the pearson coefficient between the two vectors.
+        name = 'pearson'
+        target = 'purchase_count'
+        pear_model = model(train_data_dummy, name, user_id, item_id,
+                           target, users_to_recommend, n_rec, n_display)
+
+        pear_recomm = pear_model.recommend(
+            users=users_to_recommend, k=n_rec)
+        pear_recomm.print_rows(n_display)
 
         print("Execution time:", round((time.time()-s)/60, 2), "minutes")
