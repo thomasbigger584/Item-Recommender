@@ -31,6 +31,14 @@ split_ratio = 0.2
 
 class ItemRecommender:
     def trainModels(self):
+
+        def printLarge(data, rows):
+            pd.set_option('display.max_columns', 1000)
+            pd.set_option('display.max_rows', rows)
+            print(melted_dataset)
+            pd.reset_option('display.max_columns')
+            pd.reset_option('display.max_rows')
+
         s = time.time()
         transactions = pd.read_csv('app/data/trx_data.csv')
 
@@ -52,7 +60,8 @@ class ItemRecommender:
         10                                     [84, 77, 290, 260]
         """
 
-        products_indexed = customer_indexed_transactions['products'].apply(pd.Series).reset_index()
+        products_indexed = customer_indexed_transactions['products'].apply(
+            pd.Series).reset_index()
         """
             customerId      0      1      2      3      4      5      6      7      8      9
         0               0   20.0    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
@@ -65,7 +74,7 @@ class ItemRecommender:
         7               8   79.0    8.0    8.0   48.0    NaN    NaN    NaN    NaN    NaN    NaN
         8               9  102.0    2.0    2.0  297.0    NaN    NaN    NaN    NaN    NaN    NaN
         9              10   84.0   77.0  290.0  260.0    NaN    NaN    NaN    NaN    NaN    NaN
-        """    
+        """
 
         melted_dataset = pd.melt(products_indexed, id_vars=['customerId'], value_name='products')
         """
@@ -82,10 +91,7 @@ class ItemRecommender:
         9               10        0      84.0
         """
 
-
-        pd.set_option('display.max_columns', 1000)  # or 1000
-        pd.set_option('display.max_rows', 1000)
-        print(melted_dataset)
+        printLarge(melted_dataset, 1000)
         return ''
 
         data = melted_dataset.dropna().drop(['variable'], axis=1) \
