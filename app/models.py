@@ -31,11 +31,10 @@ split_ratio = 0.2
 
 class ItemRecommender:
     def trainModels(self):
-
-        def printLarge(data, rows):
+        def printLarge(data, rows=1000):
             pd.set_option('display.max_columns', 1000)
             pd.set_option('display.max_rows', rows)
-            print(melted_dataset)
+            print(data)
             pd.reset_option('display.max_columns')
             pd.reset_option('display.max_rows')
 
@@ -47,6 +46,7 @@ class ItemRecommender:
 
         customer_indexed_transactions = transactions.set_index('customerId')
         """
+        shape (62483, 1)
         customerId                                       products
         0                                                    [20]
         1               [2, 2, 23, 68, 68, 111, 29, 86, 107, 152]
@@ -60,10 +60,11 @@ class ItemRecommender:
         10                                     [84, 77, 290, 260]
         """
 
-        products_indexed = customer_indexed_transactions['products'].apply(
-            pd.Series).reset_index()
+        products_indexed = customer_indexed_transactions['products']\
+            .apply(pd.Series).reset_index()
         """
-            customerId      0      1      2      3      4      5      6      7      8      9
+        shape (62483, 11)
+               customerId      0      1      2      3      4      5      6      7      8      9
         0               0   20.0    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
         1               1    2.0    2.0   23.0   68.0   68.0  111.0   29.0   86.0  107.0  152.0
         2               2  111.0  107.0   29.0   11.0   11.0   11.0   33.0   23.0    NaN    NaN
@@ -76,8 +77,35 @@ class ItemRecommender:
         9              10   84.0   77.0  290.0  260.0    NaN    NaN    NaN    NaN    NaN    NaN
         """
 
-        melted_dataset = pd.melt(products_indexed, id_vars=['customerId'], value_name='products')
+        # -----------------------------------------------------------------------------------------
+        # Our goal here is to break down each list of items in the products column into rows
+        # and count the number of products bought by a user
+
+        # Create data with user, item, and target field
+
+        melted_dataset = pd.melt(products_indexed,
+                                 id_vars=['customerId'],
+                                 value_name='products')
         """
+        shape (624830, 3)
+                customerId variable  products
+        0                0        0      20.0
+        1                1        0       2.0
+        2                2        0     111.0
+        3                3        0     164.0
+        4                5        0       2.0
+        5                6        0     144.0
+        6                7        0     135.0
+        7                8        0      79.0
+        8                9        0     102.0
+        9               10        0      84.0
+        ...
+        624824       14302        9     282.0
+        """
+
+        melted_dataset_dropped_na = melted_dataset.dropna()
+        """
+        shape (211478, 3)
                 customerId variable  products
         0                0        0      20.0
         1                1        0       2.0
@@ -91,16 +119,70 @@ class ItemRecommender:
         9               10        0      84.0
         """
 
-        printLarge(melted_dataset, 1000)
-        return ''
+        # print(melted_dataset_dropped_na[melted_dataset_dropped_na['customerId'] == 1])
 
-        data = melted_dataset.dropna().drop(['variable'], axis=1) \
-            .groupby(['customerId', 'products']) \
-            .agg({'products': 'count'}) \
-            .rename(columns={'products': 'purchase_count'}) \
-            .reset_index() \
-            .rename(columns={'products': 'productId'})
-        data['productId'] = data['productId'].astype(np.int64)
+        dataset_dropped_var = melted_dataset_dropped_na.drop(
+            ['variable'], axis=1)
+        """
+        shape (211478, 2)
+                customerId  products
+        0                0      20.0
+        1                1       2.0
+        2                2     111.0
+        3                3     164.0
+        4                5       2.0
+        5                6     144.0
+        6                7     135.0
+        7                8      79.0
+        8                9     102.0
+        9               10      84.0
+        """
+
+        data_group_by = dataset_dropped_var.groupby(['customerId', 'products'])
+        """
+            pandas.core.groupby.generic.DataFrameGroupBy object at 0x125b5b940
+        """
+
+        count_aggregate = data_group_by.agg({'products': 'count'})
+        """
+        shape (133585, 1)
+                            products
+        customerId products
+        0          1.0              2
+                   13.0             1
+                   19.0             3
+                   20.0             1
+                   31.0             2
+                   52.0             1
+                   69.0             2
+                   93.0             3
+                   136.0            2
+                   157.0            1
+                   198.0            1
+        """
+
+        count_aggregate_renamed_cols = count_aggregate.rename(
+            columns={'products': 'purchase_count'}).reset_index().rename(columns={'products': 'productId'})
+        count_aggregate_renamed_cols['productId'] = count_aggregate_renamed_cols['productId'].astype(
+            np.int64)
+        """
+        shape (133585, 3)
+                customerId  productId  purchase_count
+        0                0          1               2
+        1                0         13               1
+        2                0         19               3
+        3                0         20               1
+        4                0         31               2
+        5                0         52               1
+        6                0         69               2
+        7                0         93               3
+        8                0        136               2
+        9                0        157               1
+        10               0        198               1
+        """
+
+        data = count_aggregate_renamed_cols
+        # -----------------------------------------------------------------------------------------
 
         def create_data_dummy(data):
             data_dummy = data.copy()
