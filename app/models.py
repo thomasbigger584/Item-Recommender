@@ -26,6 +26,8 @@ popularity = 'popularity'
 cosine = 'cosine'
 pearson = 'pearson'
 
+split_ratio = 0.2
+
 
 class ItemRecommender:
     def trainModels(self):
@@ -35,10 +37,58 @@ class ItemRecommender:
         transactions['products'] = transactions['products'].apply(
             lambda x: [int(i) for i in x.split('|')])
 
-        data = pd.melt(transactions.set_index('customerId')['products'].apply(pd.Series).reset_index(),
-                       id_vars=['customerId'],
-                       value_name='products') \
-            .dropna().drop(['variable'], axis=1) \
+        customer_indexed_transactions = transactions.set_index('customerId')
+        """
+        customerId                                       products
+        0                                                    [20]
+        1               [2, 2, 23, 68, 68, 111, 29, 86, 107, 152]
+        2                      [111, 107, 29, 11, 11, 11, 33, 23]
+        3                                              [164, 227]
+        5                                                  [2, 2]
+        6                                     [144, 144, 55, 266]
+        7                                         [135, 206, 259]
+        8                                          [79, 8, 8, 48]
+        9                                        [102, 2, 2, 297]
+        10                                     [84, 77, 290, 260]
+        """
+
+        products_indexed = customer_indexed_transactions['products'].apply(pd.Series).reset_index()
+        """
+            customerId      0      1      2      3      4      5      6      7      8      9
+        0               0   20.0    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
+        1               1    2.0    2.0   23.0   68.0   68.0  111.0   29.0   86.0  107.0  152.0
+        2               2  111.0  107.0   29.0   11.0   11.0   11.0   33.0   23.0    NaN    NaN
+        3               3  164.0  227.0    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
+        4               5    2.0    2.0    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
+        5               6  144.0  144.0   55.0  266.0    NaN    NaN    NaN    NaN    NaN    NaN
+        6               7  135.0  206.0  259.0    NaN    NaN    NaN    NaN    NaN    NaN    NaN
+        7               8   79.0    8.0    8.0   48.0    NaN    NaN    NaN    NaN    NaN    NaN
+        8               9  102.0    2.0    2.0  297.0    NaN    NaN    NaN    NaN    NaN    NaN
+        9              10   84.0   77.0  290.0  260.0    NaN    NaN    NaN    NaN    NaN    NaN
+        """    
+
+        melted_dataset = pd.melt(products_indexed, id_vars=['customerId'], value_name='products')
+        """
+                customerId variable  products
+        0                0        0      20.0
+        1                1        0       2.0
+        2                2        0     111.0
+        3                3        0     164.0
+        4                5        0       2.0
+        5                6        0     144.0
+        6                7        0     135.0
+        7                8        0      79.0
+        8                9        0     102.0
+        9               10        0      84.0
+        """
+
+
+        pd.set_option('display.max_columns', 1000)  # or 1000
+        pd.set_option('display.max_rows', 1000)
+        print(melted_dataset)
+        return ''
+
+        data = melted_dataset.dropna().drop(['variable'], axis=1) \
             .groupby(['customerId', 'products']) \
             .agg({'products': 'count'}) \
             .rename(columns={'products': 'purchase_count'}) \
@@ -65,7 +115,7 @@ class ItemRecommender:
         data_norm = normalize_data(data)
 
         def split_data(data):
-            train, test = train_test_split(data, test_size=.2)
+            train, test = train_test_split(data, test_size=split_ratio)
             train_data = tc.SFrame(train)
             test_data = tc.SFrame(test)
             return train_data, test_data
