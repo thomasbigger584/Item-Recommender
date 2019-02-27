@@ -16,6 +16,10 @@ class ItemRecommenderView(APIView):
         ItemRecommender().trainModels()
         return Response(status=status.HTTP_200_OK)
 
+    def get(self, request):
+        ItemRecommender().query()
+        return Response(status=status.HTTP_200_OK)
+
 
 class HomeListView(ListView):
     """Renders the home page, with a list of all messages."""

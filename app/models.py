@@ -9,7 +9,6 @@ from sklearn.model_selection import train_test_split
 
 # Create your models here.
 
-
 class LogMessage(models.Model):
     message = models.CharField(max_length=300)
     log_date = models.DateTimeField("date logged")
@@ -190,61 +189,6 @@ class ItemRecommender:
         data = count_aggregate_renamed_cols
         # -----------------------------------------------------------------------------------------
 
-        # Dummy for marking whether a customer bought that item or not.
-        # If one buys an item, then purchase_dummy are marked as 1
-        data_dummy = data.copy()
-        data_dummy['purchase_dummy'] = 1
-
-        # Normalizing the purchase count, say by each user, would not work because customers may have different buying frequency don’t have the same taste.
-        # However, we can normalize items by purchase frequency across all users.
-        # we will normalize their purchase history, from 0–1 (with 1 being the most number of purchase for an item and 0 being 0 purchase count for that item
-
-        df_matrix = pd.pivot_table(
-            data, values='purchase_count', index='customerId', columns='productId')
-        df_matrix_norm = (df_matrix-df_matrix.min()) / \
-            (df_matrix.max()-df_matrix.min())
-        d = df_matrix_norm.reset_index()
-        d.index.names = ['scaled_purchase_freq']
-        data_norm = pd.melt(
-            d, id_vars=['customerId'], value_name='scaled_purchase_freq').dropna()
-        """
-        shape (133585, 3)
-                customerId productId  scaled_purchase_freq
-        9                 9         0              0.133333
-        25               25         0              0.133333
-        32               33         0              0.133333
-        35               36         0              0.133333
-        43               44         0              0.133333
-        55               56         0              0.133333
-        59               60         0              0.000000
-        71               72         0              0.333333
-        75               76         0              0.133333
-        90               91         0              0.000000
-        97               98         0              0.333333
-        99              100         0              0.133333
-        """
-        # -----------------------------------------------------------------------------------------
-
-        # Split train and test set
-        # Typically, we use a larger portion of the data for training and a smaller portion for testing.
-        # We use 80:20 ratio for our train-test set size.
-        # Our training portion will be used to develop a predictive model, while the other to evaluate the model’s performance.
-
-        def split_data(data):
-            # split ratio is 0.2
-            train, test = train_test_split(data, test_size=split_ratio)
-            train_data = tc.SFrame(train)
-            test_data = tc.SFrame(test)
-            return train_data, test_data
-
-        train_data, test_data = split_data(data)
-        train_data_dummy, test_data_dummy = split_data(data_dummy)
-        train_data_norm, test_data_norm = split_data(data_norm)
-
-        # Now that we have three datasets with purchase counts, purchase dummy, and scaled purchase counts
-
-        # -----------------------------------------------------------------------------------------
-
         def model(train_data, name, user_id, item_id, target, users_to_recommend, n_rec, n_display):
             if name == popularity:
                 model = tc.popularity_recommender.create(train_data,
@@ -276,33 +220,39 @@ class ItemRecommender:
 
         # The popularity model takes the most popular items for recommendation.
         # These items are products with the highest number of sells across customers.
-        target = 'purchase_count'
-        popularity_model = model(train_data_dummy, popularity, user_id,
-                                 item_id, target, users_to_recommend, n_rec, n_display)
-
-        # ------ todo see what this looks like, continue ith the cmparisons of models saying we now have the 3 datasets
-        # print(popularity_model)
-        # return ''
+        popularity_model = model(tc.SFrame(data), popularity, user_id, item_id, target,
+                                 users_to_recommend, n_rec, n_display)
 
         # In collaborative filtering, we would recommend items based on how similar users purchase items.
         # For instance, if customer 1 and customer 2 bought similar items, e.g. 1 bought X, Y, Z and 2 bought X, Y, we would recommend an item Z to customer 2.
-        target = 'purchase_count'
-        cos_model = model(train_data_dummy, cosine, user_id, item_id, target,
+        cos_model = model(tc.SFrame(data), cosine, user_id, item_id, target,
                           users_to_recommend, n_rec, n_display)
 
-        # Similarity is the pearson coefficient between the two vectors.
-        target = 'purchase_count'
-        pear_model = model(train_data_dummy, pearson, user_id, item_id,
-                           target, users_to_recommend, n_rec, n_display)
-        print("Execution time:", round((time.time()-s)/60, 2), "minutes")
+        # # Similarity is the pearson coefficient between the two vectors.
+        pear_model = model(tc.SFrame(data), pearson, user_id, item_id, target,
+                           users_to_recommend, n_rec, n_display)
 
-    def recommend(self):
-        popularity_model = tc.load_model(model_folder + '/' + popularity)
+    def query(self):
+        users_to_recommend = list([1])
 
-        users_to_recommend = list(1)
         n_rec = 10
-        popularity_recomm = popularity_model.recommend(
-            users=users_to_recommend, k=n_rec)
-
         n_display = 30
+
+        def loadModel(name):
+            return tc.load_model(model_folder + '/' + name)
+
+        def recommend(model):
+            return model.recommend(users=users_to_recommend, k=n_rec)
+
+        def recommendationForName(name):
+            model = loadModel(name)
+            return recommend(model)
+
+        popularity_recomm = recommendationForName(popularity)
         popularity_recomm.print_rows(n_display)
+
+        cosine_recomm = recommendationForName(cosine)
+        cosine_recomm.print_rows(n_display)
+
+        pearson_recomm = recommendationForName(pearson)
+        pearson_recomm.print_rows(n_display)
