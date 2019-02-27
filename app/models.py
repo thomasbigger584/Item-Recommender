@@ -281,8 +281,8 @@ class ItemRecommender:
                                  item_id, target, users_to_recommend, n_rec, n_display)
 
         # ------ todo see what this looks like, continue ith the cmparisons of models saying we now have the 3 datasets
-        print(popularity_model)
-        return ''
+        # print(popularity_model)
+        # return ''
 
         # In collaborative filtering, we would recommend items based on how similar users purchase items.
         # For instance, if customer 1 and customer 2 bought similar items, e.g. 1 bought X, Y, Z and 2 bought X, Y, we would recommend an item Z to customer 2.
