@@ -217,7 +217,7 @@ class ItemRecommender:
         target = 'purchase_count'
         users_to_recommend = list(transactions[user_id])
         n_rec = 10  # number of items to recommend
-        n_display = 30
+        n_display = n_rec * 3
 
         # The popularity model takes the most popular items for recommendation.
         # These items are products with the highest number of sells across customers.
