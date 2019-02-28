@@ -11,19 +11,27 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
 class ItemRecommenderView(APIView):
     def post(self, request, format=None):
         ItemRecommender().trainModels()
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request):
-        recommendations = ItemRecommender().query()
+        try:
+            customerId = request.query_params['customerId']
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        recommendations = ItemRecommender().query(customerId)
         return Response(recommendations, status=status.HTTP_200_OK)
+
 
 class DataTransformView(APIView):
     def post(self, request, format=None):
         DataTransform().transform()
         return Response(status=status.HTTP_200_OK)
+
 
 class HomeListView(ListView):
     """Renders the home page, with a list of all messages."""

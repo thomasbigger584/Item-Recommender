@@ -233,8 +233,8 @@ class ItemRecommender:
         pear_model = model(tc.SFrame(data), pearson, user_id, item_id, target,
                            users_to_recommend, n_rec, n_display)
 
-    def query(self):
-        users_to_recommend = list([1])
+    def query(self, customerId):
+        users_to_recommend = list([customerId])
         n_rec = 10
 
         def recommendationForName(name):
@@ -254,8 +254,8 @@ class ItemRecommender:
             return ranked_array
 
         recommendations = {}
-        recommendations['popularity'] = getRecommendation(popularity)
-        recommendations['cosine'] = getRecommendation(cosine)
-        recommendations['pearson'] = getRecommendation(pearson)
+        recommendations[popularity] = getRecommendation(popularity)
+        recommendations[cosine] = getRecommendation(cosine)
+        recommendations[pearson] = getRecommendation(pearson)
 
         return recommendations
