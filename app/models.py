@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 
 # Create your models here.
 
+
 class LogMessage(models.Model):
     message = models.CharField(max_length=300)
     log_date = models.DateTimeField("date logged")
@@ -234,9 +235,7 @@ class ItemRecommender:
 
     def query(self):
         users_to_recommend = list([1])
-
         n_rec = 10
-        n_display = 30
 
         def loadModel(name):
             return tc.load_model(model_folder + '/' + name)
@@ -248,11 +247,21 @@ class ItemRecommender:
             model = loadModel(name)
             return recommend(model)
 
-        popularity_recomm = recommendationForName(popularity)
-        popularity_recomm.print_rows(n_display)
+        def getRecommendation(name):
+            recomm = recommendationForName(name).to_numpy()
+            ranked_array = []
+            for index in range(0, n_rec):
+                ranked_item = recomm[index]
+                ranked_array.append({
+                    'productId': ranked_item[1],
+                    'score': ranked_item[2],
+                    'rank': ranked_item[3]
+                })
+            return ranked_array
 
-        cosine_recomm = recommendationForName(cosine)
-        cosine_recomm.print_rows(n_display)
+        recommendations = {}
+        recommendations['popularity'] = getRecommendation(popularity)
+        recommendations['cosine'] = getRecommendation(cosine)
+        recommendations['pearson'] = getRecommendation(pearson)
 
-        pearson_recomm = recommendationForName(pearson)
-        pearson_recomm.print_rows(n_display)
+        return recommendations

@@ -8,13 +8,7 @@ class DataTransform:
         purchaseData = purchaseData.drop(['InvoiceNo', 'InvoiceDate'], axis=1)
         purchaseData = purchaseData.dropna(subset=['StockCode', 'Description', 'Quantity', 'UnitPrice', 'CustomerID', 'Country'])
 
+        customerIds=purchaseData['CustomerID'].unique().astype(np.int64)
+
         
 
-        print(purchaseData)
-
-        # customersColumnList = list(purchaseData['CustomerID']).dropna
-
-        # print(customersColumnList)
-
-        # maxValue = purchaseData['CustomerID'].max()
-        # print(maxValue)

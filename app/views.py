@@ -17,8 +17,8 @@ class ItemRecommenderView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request):
-        ItemRecommender().query()
-        return Response(status=status.HTTP_200_OK)
+        recommendations = ItemRecommender().query()
+        return Response(recommendations, status=status.HTTP_200_OK)
 
 class DataTransformView(APIView):
     def post(self, request, format=None):
