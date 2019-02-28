@@ -237,15 +237,9 @@ class ItemRecommender:
         users_to_recommend = list([1])
         n_rec = 10
 
-        def loadModel(name):
-            return tc.load_model(model_folder + '/' + name)
-
-        def recommend(model):
-            return model.recommend(users=users_to_recommend, k=n_rec)
-
         def recommendationForName(name):
-            model = loadModel(name)
-            return recommend(model)
+            model = tc.load_model(model_folder + '/' + name)
+            return model.recommend(users=users_to_recommend, k=n_rec)
 
         def getRecommendation(name):
             recomm = recommendationForName(name).to_numpy()
