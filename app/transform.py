@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 
-
 class DataTransform:
     def transform(self):
         purchaseData = pd.read_csv('app/data/purchase_data.csv')
@@ -12,7 +11,10 @@ class DataTransform:
         customerIdArr = purchaseData['CustomerID'].unique().astype(np.int64)
         customerIds = pd.DataFrame(customerIdArr, columns=['CustomerId'])
 
-        userData = pd.read_csv('app/data/user_data.csv')
+
+        data_folder = 'app/data'
+
+        userData = pd.read_csv(data_folder + '/user_data.csv')
         userData['login'] = userData['email']
         userData['activated'] = True
         userData['password_hash'] = '$2a$10$HdQfU7GJ8xTh7V23joLEe.qcySJz./z6bO0NKfJLNwbkfRYG9mXbu'
@@ -25,35 +27,30 @@ class DataTransform:
         columnNames = ['id', 'first_name', 'last_name', 'email', 'login',
                        'activated', 'password_hash', 'lang_key', 'created_date', 'created_by', 'last_modified_by']
         customerData.columns = columnNames
-        
+
         divisor = 500
 
-        count = 0
-        collectDf = pd.DataFrame(columns=columnNames)
-        try:
-           for row in range(0, customerData.shape[0]):
-            thisRow = customerData.values[row]
-            thisDataframe = pd.DataFrame([thisRow], columns=columnNames)
-            collectDf = collectDf.append(thisDataframe)
-            if (row != 0 and row % divisor == 0):
-                collectDf.to_csv('app/data/user_seed/user_seed_data' +
-                                 str(row) + '.csv', sep=';', index=False)
-                collectDf = pd.DataFrame(columns=columnNames)
-                count = row
-        except IndexError: 
-            pass
-        
-        count = count + 1
-        if count < customerData.shape[0]:
-            collectDf = customerData.iloc[count:customerData.shape[0]]
-            collectDf.to_csv('app/data/user_seed/user_seed_data' +
-                                 str(customerData.shape[0]) + '.csv', sep=';', index=False)
-            
-        
+        def saveCsvInChunks(columnNames, data, path):
+            currentMin = 0
+            currentMax = divisor
+            collectDf = pd.DataFrame(columns=columnNames)
+            dataLength = data.shape[0]
+            while (currentMax <= dataLength):
+                collectDf = data.iloc[currentMin:currentMax]
+                collectDf.to_csv(path + str(currentMax) + '.csv', sep=';', index=False)
+                if (currentMax == dataLength):
+                    break
+                currentMin = currentMax + 1
+                currentMax += divisor
+                if (currentMax > dataLength):
+                    currentMax = dataLength
 
-        # userAuthorities = customerIds.copy()
-        # userAuthorities['authority_name'] = 'ROLE_USER'
-        # userAuthorities.columns = ['user_id', 'authority_name']
-        # userAuthorities.set_index('user_id')
-        # userAuthorities.to_csv(
-        #     'app/data/user_seed/authority_seed_data.csv', sep=';', index=False)
+        saveCsvInChunks(columnNames, customerData, data_folder + '/user_seed/user_seed_data')
+
+        userAuthorities = customerIds.copy()
+        userAuthorities['authority_name'] = 'ROLE_USER'
+        userAuthorityColumnNames = ['user_id', 'authority_name']
+        userAuthorities.columns = userAuthorityColumnNames
+
+        saveCsvInChunks(userAuthorityColumnNames, userAuthorities, data_folder + '/authority_seed/authority_seed_data')
+
