@@ -53,4 +53,3 @@ class DataTransform:
         userAuthorities.columns = userAuthorityColumnNames
 
         saveCsvInChunks(userAuthorityColumnNames, userAuthorities, data_folder + '/authority_seed/authority_seed_data')
-
