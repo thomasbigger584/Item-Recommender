@@ -238,17 +238,20 @@ class ItemRecommender:
             model = tc.load_model(model_folder + '/' + name)
             return model.recommend(users=users_to_recommend, k=n_rec)
 
+        def getRecommendation(name):
+            recomm = recommendationForName(name).to_numpy()
+            ranked_array = []
+            for ranked_item in np.nditer(recomm): 
+                ranked_array.append({
+                    'productId': ranked_item[1],
+                    'score': ranked_item[2],
+                    'rank': ranked_item[3]
+                })
+            return ranked_array
+
         recommendations = {}
-        recommendations[popularity] = recommendationForName(popularity).to_numpy()
+        recommendations[popularity] = getRecommendation(popularity)
+        recommendations[cosine] = getRecommendation(cosine)
+        recommendations[pearson] = getRecommendation(pearson)
 
-        print(recommendations[popularity])
-
-        recommendations[cosine] = recommendationForName(cosine).to_numpy()
-
-        print(recommendations[cosine])
-
-        recommendations[pearson] = recommendationForName(pearson).to_numpy()
-
-        print(recommendations[pearson])
-
-        return 'ok'
+        return recommendations
