@@ -239,15 +239,15 @@ class ItemRecommender:
             return model.recommend(users=users_to_recommend, k=n_rec)
 
         recommendations = {}
-        recommendations[popularity] = recommendationForName(popularity)
+        recommendations[popularity] = recommendationForName(popularity).to_numpy()
 
         print(recommendations[popularity])
 
-        recommendations[cosine] = recommendationForName(cosine)
+        recommendations[cosine] = recommendationForName(cosine).to_numpy()
 
         print(recommendations[cosine])
 
-        recommendations[pearson] = recommendationForName(pearson)
+        recommendations[pearson] = recommendationForName(pearson).to_numpy()
 
         print(recommendations[pearson])
 
