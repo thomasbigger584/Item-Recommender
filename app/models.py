@@ -7,9 +7,6 @@ import time
 import turicreate as tc
 from sklearn.model_selection import train_test_split
 
-# Create your models here.
-
-
 class LogMessage(models.Model):
     message = models.CharField(max_length=300)
     log_date = models.DateTimeField("date logged")
@@ -229,7 +226,7 @@ class ItemRecommender:
         cos_model = model(tc.SFrame(data), cosine, user_id, item_id, target,
                           users_to_recommend, n_rec, n_display)
 
-        # # Similarity is the pearson coefficient between the two vectors.
+        # Similarity is the pearson coefficient between the two vectors.
         pear_model = model(tc.SFrame(data), pearson, user_id, item_id, target,
                            users_to_recommend, n_rec, n_display)
 
@@ -241,21 +238,17 @@ class ItemRecommender:
             model = tc.load_model(model_folder + '/' + name)
             return model.recommend(users=users_to_recommend, k=n_rec)
 
-        def getRecommendation(name):
-            recomm = recommendationForName(name).to_numpy()
-            ranked_array = []
-            for index in range(0, n_rec):
-                ranked_item = recomm[index]
-                ranked_array.append({
-                    'productId': ranked_item[1],
-                    'score': ranked_item[2],
-                    'rank': ranked_item[3]
-                })
-            return ranked_array
-
         recommendations = {}
-        recommendations[popularity] = getRecommendation(popularity)
-        recommendations[cosine] = getRecommendation(cosine)
-        recommendations[pearson] = getRecommendation(pearson)
+        recommendations[popularity] = recommendationForName(popularity)
 
-        return recommendations
+        print(recommendations[popularity])
+
+        recommendations[cosine] = recommendationForName(cosine)
+
+        print(recommendations[cosine])
+
+        recommendations[pearson] = recommendationForName(pearson)
+
+        print(recommendations[pearson])
+
+        return 'ok'
