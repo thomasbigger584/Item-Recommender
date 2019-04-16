@@ -248,6 +248,7 @@ class ItemRecommender:
                     'score': ranked_item[2],
                     'rank': ranked_item[3]
                 })
+            return ranked_array;
 
         recommendations = {}
         recommendations[popularity] = getRecommendation(popularity)
