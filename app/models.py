@@ -7,6 +7,7 @@ import time
 import turicreate as tc
 from sklearn.model_selection import train_test_split
 
+
 class LogMessage(models.Model):
     message = models.CharField(max_length=300)
     log_date = models.DateTimeField("date logged")
@@ -241,13 +242,12 @@ class ItemRecommender:
         def getRecommendation(name):
             recomm = recommendationForName(name).to_numpy()
             ranked_array = []
-            for ranked_item in np.nditer(recomm): 
+            for ranked_item in recomm:
                 ranked_array.append({
                     'productId': ranked_item[1],
                     'score': ranked_item[2],
                     'rank': ranked_item[3]
                 })
-            return ranked_array
 
         recommendations = {}
         recommendations[popularity] = getRecommendation(popularity)
